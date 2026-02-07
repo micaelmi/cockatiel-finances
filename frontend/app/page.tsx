@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
+import Header from "@/components/header";
 
 export default function Home() {
   return (
+    <>
+    <Header />
     <main className="flex flex-col justify-center items-center bg-lime-200 dark:bg-stone-950 p-8 min-h-screen text-stone-900 dark:text-stone-50">
       <div className="z-10 lg:flex justify-between items-center w-full max-w-5xl font-mono text-sm">
       </div>
@@ -24,23 +28,24 @@ export default function Home() {
         </p>
         <div className="flex gap-4 mt-6">
           <SignedOut>
-             <a href="/sign-up">
+             <Link href="/sign-up">
                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 border border-green-900 text-white transition-colors cursor-pointer">Get Started</Button>
-             </a>
-             <a href="/sign-in">
+             </Link>
+             <Link href="/sign-in">
                <Button className="bg-green-50 hover:bg-green-100 border border-green-900 text-green-900 transition-colors cursor-pointer" size="lg">Sign In</Button>
-             </a>
+             </Link>
           </SignedOut>
-          <SignedIn>
-            <a href="/dashboard">
+          {/* <SignedIn>
+            <Link href="/dashboard">
               <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 border border-green-900 text-white transition-colors cursor-pointer">Go to Dashboard</Button>
-            </a>
+            </Link>
             <div className="flex items-center ml-4">
               <UserButton />
             </div>
-          </SignedIn>
+          </SignedIn> */}
         </div>
       </div>
     </main>
+</>
   );
 }
