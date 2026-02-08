@@ -1,0 +1,13 @@
+model User {
+  id        String   @id // Clerk ID
+  email     String   @unique
+  name      String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts     Account[]
+  categories   Category[]
+  tags         Tag[]
+  transactions Transaction[]
+}
