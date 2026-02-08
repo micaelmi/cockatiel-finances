@@ -19,7 +19,7 @@ export async function listCategories(app: FastifyInstance) {
           icon: z.string().nullable(),
           type: z.enum(['INCOME', 'EXPENSE']),
           userId: z.string().nullable(),
-          createdAt: z.date(),
+          createdAt: z.coerce.date(),
         })),
       },
     },

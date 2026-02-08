@@ -16,7 +16,7 @@ export async function listTags(app: FastifyInstance) {
           id: z.uuid(),
           name: z.string(),
           userId: z.string(),
-          createdAt: z.date(),
+          createdAt: z.coerce.date(),
         })),
       },
     },
