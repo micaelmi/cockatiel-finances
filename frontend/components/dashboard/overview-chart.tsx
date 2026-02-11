@@ -4,7 +4,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 
 interface OverviewChartProps {
   data: {
-    month: string;
+    period: string;
     income: number;
     expense: number;
   }[];
@@ -15,7 +15,7 @@ export function OverviewChart({ data }: OverviewChartProps) {
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data}>
         <XAxis
-          dataKey="month"
+          dataKey="period"
           stroke="var(--muted-foreground)"
           fontSize={12}
           tickLine={false}

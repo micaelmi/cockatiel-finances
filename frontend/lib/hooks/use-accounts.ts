@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@clerk/nextjs';
 import {
   getAccounts,
   getAccount,
@@ -26,18 +27,23 @@ export const accountKeys = {
 
 // Queries
 export function useAccounts() {
+  const { user } = useUser();
+
   return useQuery({
     queryKey: accountKeys.lists(),
     queryFn: getAccounts,
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
 export function useAccount(id: string) {
+  const { user } = useUser();
+
   return useQuery({
     queryKey: accountKeys.detail(id),
     queryFn: () => getAccount(id),
-    enabled: !!id,
+    enabled: !!id && !!user?.id,
     staleTime: 1000 * 60 * 5,
   });
 }

@@ -118,3 +118,19 @@ export interface UpdateTagInput {
   name?: string;
   color?: string;
 }
+export interface DashboardSummary {
+  totalBalance: number;
+  income: number;
+  expense: number;
+  chartData: {
+    period: string;
+    income: number;
+    expense: number;
+  }[];
+  accounts: {
+    id: string;
+    name: string;
+    balance: number;
+    color: string;
+  }[];
+}

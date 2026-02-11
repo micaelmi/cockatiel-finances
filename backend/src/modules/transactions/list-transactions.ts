@@ -11,6 +11,10 @@ export async function listTransactions(app: FastifyInstance) {
       headers: z.object({
         'x-user-id': z.string().describe('Clerk User ID'),
       }),
+      querystring: z.object({
+        from: z.coerce.date().optional(),
+        to: z.coerce.date().optional(),
+      }),
       response: {
         200: z.array(z.object({
           id: z.uuid(),
@@ -41,9 +45,16 @@ export async function listTransactions(app: FastifyInstance) {
     },
   }, async (request) => {
     const userId = request.headers['x-user-id'] as string;
+    const { from, to } = request.query;
 
     const transactions = await prisma.transaction.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        date: {
+          gte: from,
+          lte: to,
+        },
+      },
       include: {
         category: { select: { id: true, name: true } },
         account: { select: { id: true, name: true } },

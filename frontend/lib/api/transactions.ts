@@ -3,10 +3,20 @@ import type {
   Transaction,
   CreateTransactionInput,
   UpdateTransactionInput,
+  DashboardSummary,
 } from './types';
 
-export async function getTransactions(): Promise<Transaction[]> {
-  const response = await apiClient.get<Transaction[]>('/transactions');
+export async function getTransactions(filters?: { from?: string; to?: string }): Promise<Transaction[]> {
+  const response = await apiClient.get<Transaction[]>('/transactions', {
+    params: filters,
+  });
+  return response.data;
+}
+
+export async function getDashboardSummary(filters: { from: string; to: string }): Promise<DashboardSummary> {
+  const response = await apiClient.get<DashboardSummary>('/transactions/summary', {
+    params: filters,
+  });
   return response.data;
 }
 

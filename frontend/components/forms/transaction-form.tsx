@@ -339,7 +339,7 @@ export function TransactionForm({ type, onSuccess }: TransactionFormProps) {
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
+                <PopoverContent className="p-0 w-(--radix-popover-trigger-width)" align="start">
                   <Command>
                     <CommandInput 
                       placeholder="Search or create tag..." 

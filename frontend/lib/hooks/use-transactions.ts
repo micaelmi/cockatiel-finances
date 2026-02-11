@@ -1,16 +1,19 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@clerk/nextjs';
 import {
   getTransactions,
   createTransaction,
   updateTransaction,
   deleteTransaction,
+  getDashboardSummary,
 } from '../api/transactions';
 import type {
   Transaction,
   CreateTransactionInput,
   UpdateTransactionInput,
+  DashboardSummary,
 } from '../api/types';
 
 // Query Keys
@@ -21,14 +24,31 @@ export const transactionKeys = {
     [...transactionKeys.lists(), filters] as const,
   details: () => [...transactionKeys.all, 'detail'] as const,
   detail: (id: string) => [...transactionKeys.details(), id] as const,
+  summaries: () => [...transactionKeys.all, 'summary'] as const,
+  summary: (filters: { from: string; to: string }) => 
+    [...transactionKeys.summaries(), filters] as const,
 };
 
 // Queries
-export function useTransactions() {
+export function useTransactions(filters?: { from?: string; to?: string }) {
+  const { user } = useUser();
+
   return useQuery({
-    queryKey: transactionKeys.lists(),
-    queryFn: getTransactions,
+    queryKey: transactionKeys.list(filters),
+    queryFn: () => getTransactions(filters),
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+export function useDashboardSummary(filters: { from: string; to: string }) {
+  const { user } = useUser();
+
+  return useQuery({
+    queryKey: transactionKeys.summary(filters),
+    queryFn: () => getDashboardSummary(filters),
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5,
   });
 }
 
