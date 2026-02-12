@@ -13,13 +13,13 @@ export default function Header() {
                 <Link href="/" className="flex items-center gap-2">
                     <Image
                         src="/icon.png"
-                        alt="Cockatiel Finances Icon"
+                        alt="Ninco Icon"
                         width={32}
                         height={32}
                         priority
                     />
                     <span className="bg-clip-text bg-linear-to-r from-emerald-500 dark:from-emerald-400 to-teal-600 dark:to-teal-500 font-extrabold text-transparent text-lg tracking-tight">
-                        Cockatiel Finances
+                        Ninco
                     </span>
                 </Link>
 

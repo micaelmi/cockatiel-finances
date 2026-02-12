@@ -17,14 +17,14 @@ export default function TermsPage() {
           <section className="space-y-4">
             <h2 className="font-bold text-foreground text-2xl">1. Acceptance of Terms</h2>
             <p>
-              By accessing and using Cockatiel Finances, you accept and agree to be bound by the terms and provision of this agreement.
+              By accessing and using Ninco, you accept and agree to be bound by the terms and provision of this agreement.
             </p>
           </section>
 
           <section className="space-y-4">
             <h2 className="font-bold text-foreground text-2xl">2. Description of Service</h2>
             <p>
-              Cockatiel Finances provides personal finance management tools. These services are provided "as is" and intended for informational purposes only. We are not financial advisors.
+              Ninco provides personal finance management tools. These services are provided "as is" and intended for informational purposes only. We are not financial advisors.
             </p>
           </section>
 
@@ -38,7 +38,7 @@ export default function TermsPage() {
           <section className="space-y-4">
             <h2 className="font-bold text-foreground text-2xl">4. Limitation of Liability</h2>
             <p>
-              In no event shall Cockatiel Finances be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+              In no event shall Ninco be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
             </p>
           </section>
 

@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cockatiel Finances",
+  title: "Ninco",
   description: "Personal Finance Management",
 };
 

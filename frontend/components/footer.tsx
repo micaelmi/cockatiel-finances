@@ -14,12 +14,12 @@ export default function Footer() {
           <div className="flex items-center gap-4">
                 <Image
                   src="/mascot.png"
-                  alt="Cockatiel Finances"
+                  alt="Ninco"
                   width={100}
                   height={100}
                 />
             <div>
-              <h3 className="font-bold text-lg tracking-tight">Cockatiel Finances</h3>
+              <h3 className="font-bold text-lg tracking-tight">Ninco</h3>
               <p className="font-mono text-muted-foreground text-sm">
                 Smarter money management.
               </p>
@@ -39,7 +39,7 @@ export default function Footer() {
           {/* Social & Contact */}
           <div className="flex items-center gap-4">
             <Link 
-              href="https://github.com/micaelmi/cockatiel-finances" 
+              href="https://github.com/micaelmi/ninco" 
               target="_blank" 
               rel="noreferrer"
               className="hover:bg-muted p-2 rounded-full text-muted-foreground hover:text-foreground transition-all"
@@ -56,7 +56,7 @@ export default function Footer() {
         </div>
 
         <div className="flex md:flex-row flex-col justify-between items-center gap-4 mt-8 pt-8 border-muted/50 border-t font-mono text-muted-foreground text-xs">
-          <p>© {new Date().getFullYear()} Cockatiel Finances Team. Built with code and seeds.</p>
+          <p>© {new Date().getFullYear()} Ninco Team. Built with code and seeds.</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:underline">Privacy</Link>
             <Link href="/terms" className="hover:underline">Terms</Link>

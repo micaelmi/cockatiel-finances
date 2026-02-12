@@ -12,7 +12,7 @@ async function main() {
       update: {},
       create: {
         id: userId,
-        email: 'testing@cockatiel.finances',
+        email: 'testing@ninco.finances',
         name: 'Test User',
       },
     });

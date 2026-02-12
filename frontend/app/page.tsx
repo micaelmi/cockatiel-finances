@@ -22,14 +22,14 @@ export default async function Home() {
 
         <Image
           src="/mascot.png"
-          alt="Cockatiel Finances Mascot"
+          alt="Ninco Mascot"
           width={300}
           height={300}
           priority
         />
       <div className="relative flex flex-col place-items-center gap-6 text-center">
         <h1 className="bg-clip-text bg-linear-to-r from-emerald-500 dark:from-emerald-400 to-teal-600 dark:to-teal-500 font-extrabold text-transparent text-4xl sm:text-7xl tracking-tight">
-          Cockatiel Finances
+          Ninco
         </h1>
         <p className="font-semibold text-stone-700 dark:text-stone-400 text-lg">
           Master your money with ease. Simple, powerful, and built for you.

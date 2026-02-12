@@ -1,6 +1,6 @@
-# Cockatiel Finances – Design Guide (shadcn/ui Adapted)
+# Ninco – Design Guide (shadcn/ui Adapted)
 
-This document defines how **Cockatiel Finances customizes shadcn/ui**.
+This document defines how **Ninco customizes shadcn/ui**.
 It intentionally **reuses shadcn standards** and only overrides what is necessary.
 
 Audience:
@@ -24,7 +24,7 @@ Audience:
 ## 2. shadcn/ui Color Token Mapping
 
 shadcn/ui relies on **semantic CSS variables**, not raw colors.
-We adapt those variables to match Cockatiel Finances branding.
+We adapt those variables to match Ninco branding.
 
 ---
 

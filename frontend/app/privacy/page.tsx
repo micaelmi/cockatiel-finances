@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <section className="space-y-4">
             <h2 className="font-bold text-foreground text-2xl">1. Information We Collect</h2>
             <p>
-              We collect information you provide directly to us when you use Cockatiel Finances:
+              We collect information you provide directly to us when you use Ninco:
             </p>
             <ul className="space-y-2 ml-4 list-disc list-inside">
               <li>Account Information (via Clerk authentication)</li>

@@ -17,8 +17,8 @@ app.register(cors, {
 app.register(swagger, {
   openapi: {
     info: {
-      title: 'Cockatiel Finances API',
-      description: 'API for Cockatiel Finances application',
+      title: 'Ninco API',
+      description: 'API for Ninco application',
       version: '1.0.0',
     },
   },

@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="frontend/public/mascot.png" alt="Cockatiel Finances Mascot" width="180" />
-  <h1>Cockatiel Finances</h1>
+  <img src="frontend/public/mascot.png" alt="Ninco Mascot" width="180" />
+  <h1>Ninco</h1>
   <p><strong>Master your money with ease. Simple, powerful, and built for you.</strong></p>
 
   [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -14,7 +14,7 @@
 
 ## 🌟 Overview
 
-**Cockatiel Finances** is a high-performance, modern financial management application built with a monorepo architecture. Designed for speed and clarity, it provides users with a comprehensive dashboard to track income, expenses, and account balances with precision.
+**Ninco** is a high-performance, modern financial management application built with a monorepo architecture. Designed for speed and clarity, it provides users with a comprehensive dashboard to track income, expenses, and account balances with precision.
 
 Real-time synchronization, advanced filtering, and a sleek, responsive UI make it the ultimate tool for personal financial oversight.
 
@@ -22,7 +22,7 @@ Real-time synchronization, advanced filtering, and a sleek, responsive UI make i
 
 We follow a strict design philosophy to ensure consistency and accessibility:
 - **Style**: Modern, clean, and accessible (WCAG AA).
-- **Tokens**: Custom shadcn/ui tokens defined in the [Design Guide](cockatiel_finances_design_guide_light_dark_mode.md).
+- **Tokens**: Custom shadcn/ui tokens defined in the [Design Guide](design-guide.md).
 - **Themes**: Native light and dark mode support with curated color palettes.
 
 ## 🚀 Key Features
@@ -83,8 +83,8 @@ We follow a strict design philosophy to ensure consistency and accessibility:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-repo/cockatiel-finances.git
-   cd cockatiel-finances
+   git clone https://github.com/your-repo/ninco.git
+   cd ninco
    ```
 
 2. **Install dependencies**:
