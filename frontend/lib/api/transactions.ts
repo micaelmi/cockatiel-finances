@@ -4,10 +4,12 @@ import type {
   CreateTransactionInput,
   UpdateTransactionInput,
   DashboardSummary,
+  GetTransactionsParams,
+  GetTransactionsResponse,
 } from './types';
 
-export async function getTransactions(filters?: { from?: string; to?: string }): Promise<Transaction[]> {
-  const response = await apiClient.get<Transaction[]>('/transactions', {
+export async function getTransactions(filters?: GetTransactionsParams): Promise<GetTransactionsResponse> {
+  const response = await apiClient.get<GetTransactionsResponse>('/transactions', {
     params: filters,
   });
   return response.data;

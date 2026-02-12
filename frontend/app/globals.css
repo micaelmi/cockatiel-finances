@@ -50,26 +50,26 @@
   --radius: 0.75rem;
 
   /* Base */
-  --background:  #ECFDF5; /* light green tint */
-  --foreground:  #1F2937;
+  --background:  #FAFAF9; /* stone-50 */
+  --foreground:  #1C1917; /* stone-900 */
 
   --card:        #FFFFFF;
-  --card-foreground: #1F2937;
+  --card-foreground: #1C1917;
 
   --popover:     #FFFFFF;
-  --popover-foreground: #1F2937;
+  --popover-foreground: #1C1917;
 
   /* Primary (Money Green) */
   --primary:     #22C55E;
   --primary-foreground: #FFFFFF;
 
-  /* Secondary (Soft Green) */
-  --secondary:   #DCFCE7;
-  --secondary-foreground: #14532D;
+  /* Secondary (Stone) */
+  --secondary:   #E7E5E4; /* stone-200 */
+  --secondary-foreground: #1C1917;
 
   /* Muted */
-  --muted:       #ECFDF5;
-  --muted-foreground: #6B7280;
+  --muted:       #F5F5F4; /* stone-100 */
+  --muted-foreground: #78716C; /* stone-500 */
 
   /* Accent (Mascot support) */
   --accent:      #FACC15; /* cockatiel yellow */
@@ -80,8 +80,8 @@
   --destructive-foreground: #FFFFFF;
 
   /* Borders & Inputs */
-  --border:      #E5E7EB;
-  --input:       #E5E7EB;
+  --border:      #E7E5E4; /* stone-200 */
+  --input:       #E7E5E4;
   --ring:        #22C55E;
 
   /* Chart Colors (Mapped to semantic or distinct) */
@@ -96,13 +96,13 @@
   --gold-soft:    #FDE68A;
 
   /* Sidebar (Mapped to Base) */
-  --sidebar: #ECFDF5;
-  --sidebar-foreground: #1F2937;
+  --sidebar: #FAFAF9;
+  --sidebar-foreground: #1C1917;
   --sidebar-primary: #22C55E;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #FACC15;
   --sidebar-accent-foreground: #422006;
-  --sidebar-border: #E5E7EB;
+  --sidebar-border: #E7E5E4;
   --sidebar-ring: #22C55E;
 }
 

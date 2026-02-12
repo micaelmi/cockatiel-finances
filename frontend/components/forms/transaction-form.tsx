@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -40,7 +40,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Command,
   CommandEmpty,
@@ -48,12 +47,11 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command';
 import { useAccounts } from '@/lib/hooks/use-accounts';
 import { useCategories } from '@/lib/hooks/use-categories';
 import { useTags, useCreateTag } from '@/lib/hooks/use-tags';
-import { useCreateTransaction } from '@/lib/hooks/use-transactions';
+import { useCreateTransaction, useUpdateTransaction } from '@/lib/hooks/use-transactions';
 import { Check, Plus } from 'lucide-react';
 import {
   transactionFormSchema,
@@ -62,26 +60,61 @@ import {
 import { cn } from '@/lib/utils';
 import { CategoryForm } from './category-form';
 import { IconRenderer } from '../ui/icon-renderer';
+import type { Transaction } from '@/lib/api/types';
 
 interface TransactionFormProps {
-  type: 'INCOME' | 'EXPENSE';
+  type?: 'INCOME' | 'EXPENSE';
+  initialData?: Transaction;
+  transactionId?: string;
   onSuccess?: () => void;
 }
 
-export function TransactionForm({ type, onSuccess }: TransactionFormProps) {
+export function TransactionForm({ type: propsType, initialData, transactionId, onSuccess }: TransactionFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+
+  const isEditMode = !!transactionId;
+  const type = initialData ? initialData.type : propsType || 'EXPENSE'; // Fallback to expense if not provided
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: tags, isLoading: tagsLoading } = useTags();
   const createTagMutation = useCreateTag();
   const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
 
   // Filter categories by transaction type
   const filteredCategories = categories?.filter(c => c.type === type) || [];
+
+  const form = useForm<TransactionFormValues>({
+    resolver: zodResolver(transactionFormSchema),
+    defaultValues: {
+      amount: initialData ? parseFloat(initialData.amount) : '' as any,
+      description: initialData?.description || '',
+      date: initialData ? new Date(initialData.date) : new Date(),
+      accountId: initialData?.accountId || '',
+      comments: initialData?.comments || '',
+      categoryId: initialData?.categoryId || undefined,
+      tagIds: initialData?.tags?.map(t => t.id) || [],
+    },
+  });
+  
+  // Reset form when initialData changes (useful when dialog opens/closes with different data)
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        amount: parseFloat(initialData.amount),
+        description: initialData.description,
+        date: new Date(initialData.date),
+        accountId: initialData.accountId,
+        comments: initialData.comments || '',
+        categoryId: initialData.categoryId || undefined,
+        tagIds: initialData.tags?.map(t => t.id) || [],
+      });
+    }
+  }, [initialData, form]);
 
   const handleCreateTag = async (name: string) => {
     try {
@@ -102,42 +135,43 @@ export function TransactionForm({ type, onSuccess }: TransactionFormProps) {
     setIsCategoryDialogOpen(false);
   };
 
-  const form = useForm<TransactionFormValues>({
-    resolver: zodResolver(transactionFormSchema),
-    defaultValues: {
-      amount: '' as any, // Empty string to avoid controlled/uncontrolled warning
-      description: '',
-      date: new Date(),
-      accountId: '',
-      comments: '',
-      categoryId: undefined,
-      tagIds: [],
-    },
-  });
-
   async function onSubmit(values: TransactionFormValues) {
     setIsSubmitting(true);
     try {
-      await createTransaction.mutateAsync({
-        amount: values.amount,
-        type,
-        date: values.date.toISOString(),
-        description: values.description,
-        accountId: values.accountId,
-        comments: values.comments || undefined,
-        categoryId: values.categoryId || undefined,
-        tagIds: values.tagIds && values.tagIds.length > 0 ? values.tagIds : undefined,
-      });
+      if (isEditMode && transactionId) {
+        await updateTransaction.mutateAsync({
+          id: transactionId,
+          data: {
+            amount: values.amount,
+            type,
+            date: values.date.toISOString(),
+            description: values.description,
+            accountId: values.accountId,
+            comments: values.comments || undefined,
+            categoryId: values.categoryId || undefined,
+            tagIds: values.tagIds && values.tagIds.length > 0 ? values.tagIds : undefined,
+          }
+        });
+      } else {
+        await createTransaction.mutateAsync({
+          amount: values.amount,
+          type,
+          date: values.date.toISOString(),
+          description: values.description,
+          accountId: values.accountId,
+          comments: values.comments || undefined,
+          categoryId: values.categoryId || undefined,
+          tagIds: values.tagIds && values.tagIds.length > 0 ? values.tagIds : undefined,
+        });
+      }
 
-      // Success!
       if (onSuccess) {
         onSuccess();
       } else {
         router.push('/home');
       }
     } catch (error) {
-      console.error('Failed to create transaction:', error);
-      // Error is already handled by the mutation
+      console.error('Failed to save transaction:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -239,7 +273,7 @@ export function TransactionForm({ type, onSuccess }: TransactionFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Account</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select an account" />
@@ -251,7 +285,7 @@ export function TransactionForm({ type, onSuccess }: TransactionFormProps) {
                       <Loader2 className="w-4 h-4 animate-spin" />
                     </div>
                   ) : accounts && accounts.length > 0 ? (
-                    accounts.map((account) => (
+                    accounts.map((account: any) => (
                       <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
                           <span
@@ -461,7 +495,10 @@ export function TransactionForm({ type, onSuccess }: TransactionFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push('/home')}
+            onClick={() => {
+              if (onSuccess) onSuccess();
+              else router.push('/home');
+            }}
             className="flex-1"
           >
             Cancel
@@ -474,10 +511,10 @@ export function TransactionForm({ type, onSuccess }: TransactionFormProps) {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                Creating...
+                {isEditMode ? 'Saving...' : 'Creating...'}
               </>
             ) : (
-              `Add ${type === 'INCOME' ? 'Income' : 'Expense'}`
+              isEditMode ? 'Save Changes' : `Add ${type === 'INCOME' ? 'Income' : 'Expense'}`
             )}
           </Button>
         </div>

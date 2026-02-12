@@ -120,6 +120,25 @@ export interface UpdateTagInput {
   name?: string;
   color?: string;
 }
+// ... existing types ...
+
+export interface GetTransactionsParams {
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+  type?: 'INCOME' | 'EXPENSE';
+}
+
+export interface GetTransactionsResponse {
+  data: Transaction[];
+  meta: {
+    total: number;
+    page: number;
+    totalPages: number;
+  };
+}
+
 export interface DashboardSummary {
   totalBalance: number;
   income: number;

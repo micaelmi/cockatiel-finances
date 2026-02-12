@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/table";
 import { useTransactions, useDashboardSummary } from "@/lib/hooks/use-transactions";
 import { cn } from "@/lib/utils";
+import Image from 'next/image';
 
 export function DashboardClient({ userName }: { userName: string }) {
   const [mounted, setMounted] = useState(false);
@@ -93,9 +94,19 @@ export function DashboardClient({ userName }: { userName: string }) {
   return (
     <div className="space-y-8 pb-12">
       <div className="flex sm:flex-row flex-col sm:justify-between sm:items-center gap-4">
-        <div>
+        <div className="flex items-center gap-4">
+          <Image
+            src="/mascot.png"
+            alt="Cockatiel"
+            width={80}
+            height={80}
+            className="hidden md:block -scale-x-100"
+            priority
+          />
+          <div>
           <h1 className="font-bold text-3xl tracking-tight">Welcome back, {userName}!</h1>
           <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your finances today.</p>
+        </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
@@ -212,8 +223,8 @@ export function DashboardClient({ userName }: { userName: string }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions && transactions.length > 0 ? (
-                    transactions.map((transaction) => (
+                  {transactions?.data && transactions.data.length > 0 ? (
+                    transactions.data.map((transaction) => (
                       <TableRow key={transaction.id} className="group transition-colors">
                         <TableCell className="py-3">
                           <div className="flex flex-col">

@@ -30,7 +30,7 @@ export const transactionKeys = {
 };
 
 // Queries
-export function useTransactions(filters?: { from?: string; to?: string }) {
+export function useTransactions(filters?: { from?: string; to?: string; page?: number; limit?: number; type?: 'INCOME' | 'EXPENSE' }) {
   const { user } = useUser();
 
   return useQuery({
@@ -63,6 +63,8 @@ export function useCreateTransaction() {
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       // Also invalidate accounts as balance might have changed
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      // Invalidate summaries
+      queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
     },
   });
 }
@@ -76,6 +78,7 @@ export function useUpdateTransaction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
     },
   });
 }
@@ -89,31 +92,22 @@ export function useDeleteTransaction() {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: transactionKeys.lists() });
 
-      // Snapshot previous value
-      const previousTransactions = queryClient.getQueryData<Transaction[]>(
-        transactionKeys.lists()
-      );
-
-      // Optimistically update
-      queryClient.setQueryData<Transaction[]>(
-        transactionKeys.lists(),
-        (old) => old?.filter((t) => t.id !== deletedId) ?? []
-      );
-
-      return { previousTransactions };
+      // We can't easily snapshot all lists, so we settle for invalidation mostly, 
+      // but if we were to optimistically update, we'd need to find the specific query.
+      // For now, let's just invalidate on success/settled to be safe with pagination.
+      // Optimistic update for paginated lists is complex.
     },
-    onError: (_err, _deletedId, context) => {
-      // Rollback on error
-      if (context?.previousTransactions) {
-        queryClient.setQueryData(
-          transactionKeys.lists(),
-          context.previousTransactions
-        );
-      }
+    onSuccess: () => {
+      // toast.success('Transaction deleted');
+    },
+    onError: (err) => {
+      // toast.error('Failed to delete transaction');
+      console.error(err);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
     },
   });
 }
