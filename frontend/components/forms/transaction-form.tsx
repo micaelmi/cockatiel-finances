@@ -40,6 +40,10 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { CustomFormInput } from '@/components/ui/custom-form-input';
+import { CustomFormTextarea } from '@/components/ui/custom-form-textarea';
+import { CustomFormSelect } from '@/components/ui/custom-form-select';
+import { CustomFormDatePicker } from '@/components/ui/custom-form-date-picker';
 import {
   Command,
   CommandEmpty,
@@ -180,204 +184,104 @@ export function TransactionForm({ type: propsType, initialData, transactionId, o
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
+        <CustomFormInput
           control={form.control}
           name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Amount</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="top-1/2 left-3 absolute text-muted-foreground -translate-y-1/2">
-                    $
-                  </span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    className="pl-7"
-                    value={field.value || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      field.onChange(value === '' ? '' : parseFloat(value));
-                    }}
-                    onBlur={field.onBlur}
-                    name={field.name}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Amount"
+          placeholder="0.00"
+          type="number"
+          step="0.01"
+          startIcon={<span className="text-sm">$</span>}
         />
 
-        <FormField
+        <CustomFormInput
           control={form.control}
           name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input placeholder="What is this transaction for?" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Description"
+          placeholder="What is this transaction for?"
         />
 
-        <FormField
+        <CustomFormDatePicker
           control={form.control}
           name="date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        'pl-3 w-full font-normal text-left',
-                        !field.value && 'text-muted-foreground'
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, 'PPP')
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="opacity-50 ml-auto w-4 h-4" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="p-0 w-auto" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date('1900-01-01')
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Date"
+          disabled={(date) =>
+            date > new Date() || date < new Date('1900-01-01')
+          }
         />
 
-        <FormField
+        <CustomFormSelect
           control={form.control}
           name="accountId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Account</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an account" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {accountsLoading ? (
-                    <div className="flex justify-center items-center p-4">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </div>
-                  ) : accounts && accounts.length > 0 ? (
-                    accounts.map((account: any) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="rounded-full w-3 h-3"
-                            style={{ backgroundColor: account.color }}
-                          />
-                          {account.name}
-                        </div>
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="p-4 text-muted-foreground text-sm text-center">
-                      No accounts found. Please create an account first.
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Select the account for this transaction
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Account"
+          placeholder="Select an account"
+          description="Select the account for this transaction"
+          isLoading={accountsLoading}
+          emptyMessage="No accounts found. Please create an account first."
+          options={accounts?.map((account: any) => ({
+            value: account.id,
+            label: (
+              <div className="flex items-center gap-2">
+                <span
+                  className="rounded-full w-3 h-3"
+                  style={{ backgroundColor: account.color }}
+                />
+                {account.name}
+              </div>
+            ),
+          })) || []}
         />
 
-        <FormField
-          control={form.control}
-          name="categoryId"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex justify-between items-center">
-                <FormLabel>Category</FormLabel>
-                <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      type="button"
-                      variant="ghost" 
-                      size="sm" 
-                      className="gap-1 hover:bg-primary/10 px-2 h-7 text-primary hover:text-primary text-xs transition-colors"
-                    >
-                      <Plus className="w-3 h-3" />
-                      New Category
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-card sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Create New Category</DialogTitle>
-                    </DialogHeader>
-                    <CategoryForm 
-                      type={type} 
-                      onSuccess={onCategoryCreated}
-                      onCancel={() => setIsCategoryDialogOpen(false)} 
-                    />
-                  </DialogContent>
-                </Dialog>
-              </div>
-              <Select onValueChange={field.onChange} value={field.value || undefined}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categoriesLoading ? (
-                    <div className="flex justify-center items-center p-4">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    </div>
-                  ) : filteredCategories.length > 0 ? (
-                    filteredCategories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="flex justify-center items-center rounded-full w-6 h-6 text-white"
-                            style={{ backgroundColor: category.color }}
-                          >
-                            <IconRenderer name={category.icon || 'HelpCircle'} className="w-3.5 h-3.5" />
-                          </div>
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="p-4 text-muted-foreground text-sm text-center">
-                      No categories found for this type.
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-2">
+          <CustomFormSelect
+            control={form.control}
+            name="categoryId"
+            label="Category"
+            placeholder="Select a category"
+            isLoading={categoriesLoading}
+            emptyMessage="No categories found for this type."
+            headerContent={
+              <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm" 
+                    className="gap-1 hover:bg-primary/10 px-2 h-7 text-primary hover:text-primary text-xs transition-colors"
+                  >
+                    <Plus className="w-3 h-3" />
+                    New Category
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Create New Category</DialogTitle>
+                  </DialogHeader>
+                  <CategoryForm 
+                    type={type} 
+                    onSuccess={onCategoryCreated}
+                    onCancel={() => setIsCategoryDialogOpen(false)} 
+                  />
+                </DialogContent>
+              </Dialog>
+            }
+            options={filteredCategories.map((category) => ({
+              value: category.id,
+              label: (
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="flex justify-center items-center rounded-full w-6 h-6 text-white"
+                    style={{ backgroundColor: category.color }}
+                  >
+                    <IconRenderer name={category.icon || 'HelpCircle'} className="w-3.5 h-3.5" />
+                  </div>
+                  {category.name}
+                </div>
+              ),
+            }))}
+            className="mt-0" 
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -473,23 +377,12 @@ export function TransactionForm({ type: propsType, initialData, transactionId, o
           )}
         />
 
-        <FormField
+        <CustomFormTextarea
           control={form.control}
           name="comments"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Comments (Optional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Add any additional notes..."
-                  className="resize-none"
-                  rows={3}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Comments (Optional)"
+          placeholder="Add any additional notes..."
+          rows={3}
         />
 
         <div className="flex gap-3">

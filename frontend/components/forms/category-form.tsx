@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { CustomFormInput } from '@/components/ui/custom-form-input';
 import { useCreateCategory } from '@/lib/hooks/use-categories';
 import { categoryFormSchema, type CategoryFormValues } from '@/lib/validations/category';
 import { IconRenderer, CATEGORY_ICONS, CATEGORY_COLORS } from '@/components/ui/icon-renderer';
@@ -64,18 +65,11 @@ export function CategoryForm({ type, onSuccess, onCancel }: CategoryFormProps) {
         e.stopPropagation();
         form.handleSubmit(onSubmit)(e);
       }} className="space-y-6">
-        <FormField
+        <CustomFormInput
           control={form.control}
           name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category Name</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. Groceries, Salary..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Category Name"
+          placeholder="e.g. Groceries, Salary..."
         />
 
         <div className="space-y-4">
