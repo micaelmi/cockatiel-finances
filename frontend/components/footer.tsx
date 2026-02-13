@@ -6,7 +6,7 @@ import { Github, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-lime-100/70 supports-backdrop-filter:bg-lime-100/60 dark:bg-stone-900/70 dark:supports-backdrop-filter:bg-stone-900/60 backdrop-blur-xl border-t">
+    <footer className="bg-linear-to-br from-lime-200/50 dark:from-stone-900/50 to-lime-100/80 dark:to-stone-950/90 backdrop-blur-xl border-t">
       <div className="mx-auto px-4 py-8 max-w-7xl container">
         <div className="flex md:flex-row flex-col justify-between items-center gap-8">
           
