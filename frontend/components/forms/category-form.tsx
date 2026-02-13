@@ -60,7 +60,10 @@ export function CategoryForm({ type, onSuccess, onCancel }: CategoryFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={(e) => {
+        e.stopPropagation();
+        form.handleSubmit(onSubmit)(e);
+      }} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
