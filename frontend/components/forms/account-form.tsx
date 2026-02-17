@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Loader2, Check, Search } from 'lucide-react';
 import { useState } from 'react';
+import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,36 +15,47 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { CustomFormInput } from '@/components/ui/custom-form-input';
-import { useCreateCategory, useUpdateCategory } from '@/lib/hooks/use-categories';
-import { categoryFormSchema, type CategoryFormValues } from '@/lib/validations/category';
+import { useUpdateAccount, useCreateAccount } from '@/lib/hooks/use-accounts';
 import { IconRenderer, CATEGORY_ICONS, CATEGORY_COLORS } from '@/components/ui/icon-renderer';
 import { cn } from '@/lib/utils';
-import type { Category } from '@/lib/api/types';
 
-interface CategoryFormProps {
-  type: 'INCOME' | 'EXPENSE';
-  initialData?: Category;
-  categoryId?: string;
-  onSuccess: (categoryId: string) => void;
+const accountFormSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  balance: z.number(),
+  color: z.string().min(1),
+  icon: z.string().min(1),
+});
+
+type AccountFormValues = z.infer<typeof accountFormSchema>;
+
+interface AccountFormProps {
+  accountId?: string; // Optional for creation mode
+  initialData?: {
+    name: string;
+    balance: number;
+    color: string;
+    icon: string;
+  };
+  onSuccess?: () => void;
   onCancel: () => void;
 }
 
-export function CategoryForm({ type, initialData, categoryId, onSuccess, onCancel }: CategoryFormProps) {
+export function AccountForm({ accountId, initialData, onSuccess, onCancel }: AccountFormProps) {
   const [iconSearch, setIconSearch] = useState('');
-  const createCategory = useCreateCategory();
-  const updateCategory = useUpdateCategory();
+  const updateAccount = useUpdateAccount();
+  const createAccount = useCreateAccount();
 
-  const isEditMode = !!categoryId;
+  const isEditing = !!accountId;
+  const isLoading = updateAccount.isPending || createAccount.isPending;
 
-  const form = useForm<CategoryFormValues>({
-    resolver: zodResolver(categoryFormSchema),
+  const form = useForm<AccountFormValues>({
+    resolver: zodResolver(accountFormSchema),
     defaultValues: {
       name: initialData?.name || '',
-      type: initialData?.type || type,
+      balance: initialData?.balance || 0,
       color: initialData?.color || CATEGORY_COLORS[0].value,
-      icon: initialData?.icon || CATEGORY_ICONS[0],
+      icon: initialData?.icon || 'Wallet',
     },
   });
 
@@ -51,47 +63,62 @@ export function CategoryForm({ type, initialData, categoryId, onSuccess, onCance
     icon.toLowerCase().includes(iconSearch.toLowerCase())
   );
 
-  async function onSubmit(values: CategoryFormValues) {
+  async function onSubmit(values: AccountFormValues) {
     try {
-      if (isEditMode && categoryId) {
-        await updateCategory.mutateAsync({
-          id: categoryId,
-          data: {
-            name: values.name,
-            type: values.type,
-            color: values.color,
-            icon: values.icon,
-          }
+      const roundedValues = {
+        ...values,
+        balance: Number(values.balance.toFixed(2)),
+      };
+
+      if (isEditing && accountId) {
+        await updateAccount.mutateAsync({
+          id: accountId,
+          data: roundedValues,
         });
-        onSuccess(categoryId);
       } else {
-        const category = await createCategory.mutateAsync({
-          name: values.name,
-          type: values.type,
-          color: values.color,
-          icon: values.icon,
-        });
-        onSuccess(category.id);
+        await createAccount.mutateAsync(roundedValues);
       }
+      onSuccess?.();
     } catch (error) {
-      console.error('Failed to save category:', error);
+      // toast handled by the hook
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => {
-        e.stopPropagation();
-        form.handleSubmit(onSubmit)(e);
-      }} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <CustomFormInput
           control={form.control}
           name="name"
-          label="Category Name"
-          placeholder="e.g. Groceries, Salary..."
+          label="Account Name"
+          placeholder="e.g. Main Account, Savings..."
         />
 
-        <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="balance"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Balance</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <span className="top-1/2 left-3 absolute font-mono text-muted-foreground text-sm -translate-y-1/2">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="bg-background px-3 py-2 pl-7 border border-input rounded-md outline-none focus:ring-1 focus:ring-ring w-full font-mono text-sm"
+                    value={field.value}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Color Picker — reused from category form */}
+        <div className="space-y-3">
           <FormLabel>Color</FormLabel>
           <div className="flex flex-wrap gap-2">
             {CATEGORY_COLORS.map((color) => (
@@ -99,7 +126,7 @@ export function CategoryForm({ type, initialData, categoryId, onSuccess, onCance
                 key={color.value}
                 type="button"
                 className={cn(
-                  "flex justify-center items-center border-2 rounded-full w-8 h-8 transition-all",
+                  "flex justify-center items-center border-2 rounded-full w-8 h-8 transition-all cursor-pointer",
                   form.watch('color') === color.value 
                     ? "border-primary scale-110 shadow-md" 
                     : "border-transparent hover:scale-105"
@@ -116,7 +143,8 @@ export function CategoryForm({ type, initialData, categoryId, onSuccess, onCance
           </div>
         </div>
 
-        <div className="space-y-4">
+        {/* Icon Picker — reused from category form */}
+        <div className="space-y-3">
           <div className="flex justify-between items-center">
             <FormLabel>Icon</FormLabel>
             <div className="relative">
@@ -136,7 +164,7 @@ export function CategoryForm({ type, initialData, categoryId, onSuccess, onCance
                 key={iconName}
                 type="button"
                 className={cn(
-                  "flex justify-center items-center p-2 border rounded-md transition-all",
+                  "flex justify-center items-center p-2 border rounded-md transition-all cursor-pointer",
                   form.watch('icon') === iconName
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-background text-muted-foreground border-transparent hover:border-input"
@@ -165,16 +193,16 @@ export function CategoryForm({ type, initialData, categoryId, onSuccess, onCance
           </Button>
           <Button
             type="submit"
-            disabled={createCategory.isPending || updateCategory.isPending}
+            disabled={isLoading}
             className="flex-1"
           >
-            {createCategory.isPending || updateCategory.isPending ? (
+            {isLoading ? (
               <>
                 <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                {isEditMode ? 'Saving...' : 'Creating...'}
+                {isEditing ? 'Saving...' : 'Creating...'}
               </>
             ) : (
-              isEditMode ? 'Save Changes' : 'Create Category'
+              isEditing ? 'Save Changes' : 'Create Account'
             )}
           </Button>
         </div>

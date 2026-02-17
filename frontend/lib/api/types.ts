@@ -102,10 +102,10 @@ export interface UpdateCategoryInput {
 }
 
 // Tag Types
+// Tag Types
 export interface Tag {
   id: string;
   name: string;
-  color: string;
   userId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -113,12 +113,10 @@ export interface Tag {
 
 export interface CreateTagInput {
   name: string;
-  color: string;
 }
 
 export interface UpdateTagInput {
   name?: string;
-  color?: string;
 }
 // ... existing types ...
 
@@ -153,6 +151,7 @@ export interface DashboardSummary {
     name: string;
     balance: number;
     color: string;
+    icon: string;
   }[];
   categoryIncome: {
     id: string;

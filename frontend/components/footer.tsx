@@ -34,6 +34,9 @@ export default function Footer() {
             <Link href="/transactions" className="text-muted-foreground hover:text-primary transition-colors">
               Transactions
             </Link>
+            <Link href="/manage" className="text-muted-foreground hover:text-primary transition-colors">
+              Categories & Tags
+            </Link>
           </nav>
 
           {/* Social & Contact */}

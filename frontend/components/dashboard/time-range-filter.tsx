@@ -34,19 +34,19 @@ export function TimeRangeFilter({
         <Button
           variant="ghost"
           size="icon"
-          className="hover:bg-background/80 w-8 h-8 transition-all"
+          className="hover:bg-muted w-8 h-8 transition-colors cursor-pointer"
           onClick={() => onNavigate('prev')}
           disabled={value === 'custom'}
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        <span className="min-w-[120px] font-mono text-zinc-600 text-xs text-center uppercase tracking-wider">
+        <span className="min-w-[120px] font-mono text-muted-foreground text-xs text-center uppercase tracking-wider">
           {label}
         </span>
         <Button
           variant="ghost"
           size="icon"
-          className="hover:bg-background/80 w-8 h-8 transition-all"
+          className="hover:bg-muted w-8 h-8 transition-colors cursor-pointer"
           onClick={() => onNavigate('next')}
           disabled={value === 'custom'}
         >
@@ -62,8 +62,8 @@ export function TimeRangeFilter({
             variant="ghost"
             size="sm"
             className={cn(
-              "px-3 h-8 font-mono text-xs capitalize transition-all",
-              value === range ? "bg-emerald-500 text-emerald-50 shadow-sm" : "hover:bg-background/50"
+              "px-3 h-8 font-mono text-xs capitalize transition-colors cursor-pointer",
+              value === range ? "bg-emerald-500 text-emerald-50 shadow-sm hover:bg-emerald-600" : "hover:bg-muted"
             )}
             onClick={() => onChange(range as TimeRange)}
           >
@@ -77,8 +77,8 @@ export function TimeRangeFilter({
               variant="ghost"
               size="sm"
               className={cn(
-                "px-3 h-8 font-mono text-xs transition-all",
-                value === 'custom' ? "bg-emerald-500 text-emerald-50 shadow-sm" : "hover:bg-background/50"
+                "px-3 h-8 font-mono text-xs transition-colors cursor-pointer",
+                value === 'custom' ? "bg-emerald-500 text-emerald-50 shadow-sm hover:bg-emerald-600" : "hover:bg-muted"
               )}
               onClick={() => onChange('custom')}
             >

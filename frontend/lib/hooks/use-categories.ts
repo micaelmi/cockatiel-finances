@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getCategories,
   getCategory,
@@ -49,7 +50,11 @@ export function useCreateCategory() {
   return useMutation({
     mutationFn: createCategory,
     onSuccess: () => {
+      toast.success('Category created');
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
+    },
+    onError: () => {
+      toast.error('Failed to create category');
     },
   });
 }
@@ -61,12 +66,15 @@ export function useUpdateCategory() {
     mutationFn: ({ id, data }: { id: string; data: UpdateCategoryInput }) =>
       updateCategory(id, data),
     onSuccess: (_data, variables) => {
+      toast.success('Category updated');
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: categoryKeys.detail(variables.id),
       });
-      // Invalidate transactions as they reference categories
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+    onError: () => {
+      toast.error('Failed to update category');
     },
   });
 }
@@ -91,12 +99,16 @@ export function useDeleteCategory() {
       return { previousCategories };
     },
     onError: (_err, _deletedId, context) => {
+      toast.error('Failed to delete category');
       if (context?.previousCategories) {
         queryClient.setQueryData(
           categoryKeys.lists(),
           context.previousCategories
         );
       }
+    },
+    onSuccess: () => {
+      toast.success('Category deleted');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });

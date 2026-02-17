@@ -1,137 +1,46 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { 
-  startOfWeek, 
-  endOfWeek, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfYear, 
-  endOfYear,
-  addWeeks,
-  subWeeks,
-  addMonths,
-  subMonths,
-  addYears,
-  subYears,
-  format
-} from 'date-fns';
-import { 
-  ArrowDownCircle, 
-  ArrowUpCircle, 
-  PlusCircle, 
+import { useState, useEffect } from 'react';
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  PlusCircle,
   Wallet,
   Loader2,
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
   ArrowRightCircle,
-  Calendar as CalendarIcon
 } from "lucide-react";
 import Link from "next/link";
+import { MotionDiv, staggerContainer, slideUp } from "../ui/motion";
 
 import { OverviewChart } from "@/components/dashboard/overview-chart";
 import { CategoryDistributionChart } from "@/components/dashboard/category-distribution-chart";
-import { TimeRangeFilter, type TimeRange } from "./time-range-filter";
+import { TimeRangeFilter } from "./time-range-filter";
 import { AccountSummaryPopover } from "./account-summary-popover";
+import { SummaryCard } from "./summary-card";
 import { IconRenderer } from "../ui/icon-renderer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow, MotionTableBody, MotionTableRow,
 } from "@/components/ui/table";
 import { useTransactions, useDashboardSummary } from "@/lib/hooks/use-transactions";
+import { useDateRange } from "@/lib/hooks/use-date-range";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import Image from 'next/image';
+import { title } from 'process';
 
 export function DashboardClient({ userName }: { userName: string }) {
   const [mounted, setMounted] = useState(false);
-  const [timeRange, setTimeRange] = useState<TimeRange>('week');
-  const [baseDate, setBaseDate] = useState(new Date());
-  const [customRange, setCustomRange] = useState<{ from: Date; to: Date } | undefined>();
+  const { preset, setPreset, navigate, label, customRange, setCustomRange, filters } = useDateRange('week');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const filters = useMemo(() => {
-    let start: Date;
-    let end: Date;
-
-    switch (timeRange) {
-      case 'week':
-        start = startOfWeek(baseDate, { weekStartsOn: 1 });
-        end = endOfWeek(baseDate, { weekStartsOn: 1 });
-        break;
-      case 'month':
-        start = startOfMonth(baseDate);
-        end = endOfMonth(baseDate);
-        break;
-      case 'year':
-        start = startOfYear(baseDate);
-        end = endOfYear(baseDate);
-        break;
-      case 'custom':
-        start = customRange?.from || startOfMonth(new Date());
-        end = customRange?.to || endOfMonth(new Date());
-        break;
-    }
-
-    return {
-      from: start.toISOString(),
-      to: end.toISOString(),
-    };
-  }, [timeRange, baseDate, customRange]);
-
-  const navigationLabel = useMemo(() => {
-    const now = new Date();
-    switch (timeRange) {
-      case 'week':
-        if (startOfWeek(baseDate, { weekStartsOn: 1 }).getTime() === startOfWeek(now, { weekStartsOn: 1 }).getTime()) {
-          return 'THIS WEEK';
-        }
-        return `Week of ${format(startOfWeek(baseDate, { weekStartsOn: 1 }), 'MMM d')}`;
-      case 'month':
-        if (startOfMonth(baseDate).getTime() === startOfMonth(now).getTime()) {
-          return 'THIS MONTH';
-        }
-        return format(baseDate, 'MMMM yyyy');
-      case 'year':
-        if (startOfYear(baseDate).getTime() === startOfYear(now).getTime()) {
-          return 'THIS YEAR';
-        }
-        return format(baseDate, 'yyyy');
-      case 'custom':
-        if (customRange?.from && customRange?.to) {
-          return `${format(customRange.from, 'MMM d')} - ${format(customRange.to, 'MMM d')}`;
-        }
-        return 'Custom Range';
-    }
-  }, [timeRange, baseDate, customRange]);
-
-  const handleNavigate = (direction: 'prev' | 'next') => {
-    switch (timeRange) {
-      case 'week':
-        setBaseDate(prev => direction === 'next' ? addWeeks(prev, 1) : subWeeks(prev, 1));
-        break;
-      case 'month':
-        setBaseDate(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
-        break;
-      case 'year':
-        setBaseDate(prev => direction === 'next' ? addYears(prev, 1) : subYears(prev, 1));
-        break;
-    }
-  };
-
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary(filters);
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(filters);
 
-  // Early return after all hooks to prevent hydration mismatch while following Rules of Hooks
   if (!mounted) return null;
 
   if (summaryLoading || transactionsLoading) {
@@ -158,105 +67,97 @@ export function DashboardClient({ userName }: { userName: string }) {
             priority
           />
           <div className="px-2 md:px-0">
-          <h1 className="font-bold text-3xl tracking-tight">Welcome back, {userName}!</h1>
-          <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your finances today.</p>
-        </div>
+            <h1 className="font-bold text-3xl tracking-tight">Welcome back, {userName}!</h1>
+            <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your finances today.</p>
+          </div>
         </div>
         <div className="flex flex-col flex-wrap justify-center md:justify-end items-center gap-3">
-          <TimeRangeFilter 
-            value={timeRange} 
-            onChange={(val) => {
-              setTimeRange(val);
-              setBaseDate(new Date()); // Reset to now when switching presets
-            }} 
-            onNavigate={handleNavigate}
-            label={navigationLabel}
+          <TimeRangeFilter
+            value={preset}
+            onChange={setPreset}
+            onNavigate={navigate}
+            label={label}
             customRange={customRange}
             onCustomRangeChange={setCustomRange}
           />
-          {/* <div className="flex justify-center items-center gap-2 px-2 w-full">
-            <Button className="w-1/2 max-w-[200px]" asChild size="sm">
-              <Link href="/transactions/income">
-                <PlusCircle className="mr-2 w-4 h-4" /> Income
-              </Link>
-            </Button>
-            <Button className="w-1/2 max-w-[200px]" variant="outline" asChild size="sm">
-              <Link href="/transactions/expense">
-                <PlusCircle className="mr-2 w-4 h-4" /> Expense
-              </Link>
-            </Button>
-          </div> */}
         </div>
       </div>
 
+
+
       {/* Summary Cards */}
-      <div className="gap-4 grid grid-cols-1 md:grid-cols-3">
-        <Card className="group relative shadow-sm border-2 border-primary/10 overflow-hidden">
-          <div className="right-0 bottom-0 absolute opacity-5 group-hover:opacity-10 p-4 rotate-12 transition-opacity translate-x-4 translate-y-4">
-            <Wallet className="w-24 h-24" />
-          </div>
-          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Total Balance</CardTitle>
-            <AccountSummaryPopover 
-              accounts={summary?.accounts || []} 
-            />
-          </CardHeader>
-          <CardContent>
-            <div className="font-mono font-bold text-3xl">
-              ${summary?.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+      <MotionDiv 
+        className="gap-4 grid grid-cols-1 md:grid-cols-3"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        <MotionDiv variants={slideUp}>
+          <Card className="group relative shadow-sm border-2 border-primary/10 h-full overflow-hidden">
+            <div className="right-0 bottom-0 absolute opacity-5 group-hover:opacity-10 p-4 rotate-12 transition-opacity translate-x-4 translate-y-4">
+              <Wallet className="w-24 h-24" />
             </div>
-            <p className="mt-1 text-muted-foreground text-xs">Across all your accounts</p>
-          </CardContent>
-        </Card>
+            <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">Total Balance</CardTitle>
+              <AccountSummaryPopover accounts={summary?.accounts || []} />
+            </CardHeader>
+            <CardContent>
+              <div className="font-mono font-bold text-3xl">
+                {formatCurrency(summary?.totalBalance ?? 0)}
+              </div>
+              <p className="mt-1 text-muted-foreground text-xs">Across all your accounts</p>
+            </CardContent>
+          </Card>
+        </MotionDiv>
 
-        <Card className="group shadow-sm border-b-4 border-b-primary/50">
-          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Income</CardTitle>
-            <ArrowUpCircle className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent className="flex flex-row justify-between items-end space-y-0 pb-2">
-            <div>
-              <div className="flex items-baseline gap-1 font-mono font-bold text-primary text-3xl">
-              +${summary?.income.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </div>
-            <p className="flex items-center gap-1 mt-1 text-muted-foreground text-xs">
-              <TrendingUp className="w-3 h-3" /> Your earnings
-            </p>
-            </div>
-            <Button asChild size="sm">
-              <Link href="/transactions/income">
-                <PlusCircle className="w-4 h-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <MotionDiv variants={slideUp}>
+          <SummaryCard
+            title="Income"
+            value={summary?.income}
+            icon={ArrowUpCircle}
+            variant="income"
+            prefix="+"
+            subtitle="Your earnings"
+            className="border-b-4 border-b-primary/50 h-full"
+            action={
+              <Button asChild size="sm">
+                <Link href="/transactions/income">
+                  <PlusCircle className="w-4 h-4" />
+                </Link>
+              </Button>
+            }
+          />
+        </MotionDiv>
 
-        <Card className="group shadow-sm border-b-4 border-b-destructive/50">
-          <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Expenses</CardTitle>
-            <ArrowDownCircle className="w-4 h-4 text-destructive" />
-          </CardHeader>
-          <CardContent className="flex flex-row justify-between items-end space-y-0 pb-2">
-            <div>
-            <div className="font-mono font-bold text-destructive text-3xl">
-              -${summary?.expense.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </div>
-            <p className="flex items-center gap-1 mt-1 text-muted-foreground text-xs">
-              <TrendingDown className="w-3 h-3" /> Your expenses
-            </p>
-            </div>
-            <Button className="bg-destructive hover:bg-destructive/80" asChild size="sm">
-              <Link href="/transactions/expense">
-                <PlusCircle className="w-4 h-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+        <MotionDiv variants={slideUp}>
+          <SummaryCard
+            title="Expenses"
+            value={summary?.expense}
+            icon={ArrowDownCircle}
+            variant="expense"
+            prefix="-"
+            subtitle="Your expenses"
+            className="border-b-4 border-b-destructive/50 h-full"
+            action={
+              <Button className="bg-destructive hover:bg-destructive/80" asChild size="sm">
+                <Link href="/transactions/expense">
+                  <PlusCircle className="w-4 h-4" />
+                </Link>
+              </Button>
+            }
+          />
+        </MotionDiv>
+      </MotionDiv>
 
-      <div className="gap-8 grid grid-cols-1 lg:grid-cols-7">
+      <MotionDiv 
+        className="gap-8 grid grid-cols-1 lg:grid-cols-7"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Recent Transactions */}
-        <Card className="col-span-1 lg:col-span-3 shadow-sm border-2">
+        <MotionDiv className="col-span-1 lg:col-span-3 h-full" variants={slideUp}>
+        <Card className="shadow-sm border-2 h-full">
           <CardHeader className="flex flex-row justify-between items-center space-y-0">
             <div className="space-y-1">
               <CardTitle>Recent Transactions</CardTitle>
@@ -264,7 +165,7 @@ export function DashboardClient({ userName }: { userName: string }) {
                 Your latest activities in the selected period.
               </CardDescription>
             </div>
-            <Button variant="ghost" size="icon" asChild className="hover:bg-stone-200 transition-colors">
+            <Button variant="ghost" size="icon" asChild className="hover:bg-muted transition-colors">
               <Link href="/transactions">
                 <ArrowRightCircle className="w-5 h-5" />
                 <span className="sr-only">View all transactions</span>
@@ -280,17 +181,21 @@ export function DashboardClient({ userName }: { userName: string }) {
                     <TableHead className="text-right">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                <MotionTableBody
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                >
                   {transactions?.data && transactions.data.length > 0 ? (
                     transactions.data.map((transaction) => (
-                      <TableRow key={transaction.id} className="group transition-colors">
+                      <MotionTableRow key={transaction.id} className="group transition-colors" variants={slideUp}>
                         <TableCell className="py-3">
                           <div className="flex flex-col">
                             <span className="font-medium group-hover:text-primary text-sm transition-colors">
                               {transaction.description}
                             </span>
                             <div className="flex items-center gap-2 mt-1">
-                              <div 
+                              <div
                                 className="flex justify-center items-center rounded-full w-5 h-5 text-white"
                                 style={{ backgroundColor: transaction.category?.color || '#94a3b8' }}
                               >
@@ -309,9 +214,10 @@ export function DashboardClient({ userName }: { userName: string }) {
                           "font-mono font-bold text-right",
                           transaction.type === 'INCOME' ? 'text-primary' : 'text-destructive'
                         )}>
-                          {transaction.type === 'INCOME' ? '+' : '-'}${parseFloat(transaction.amount).toFixed(2)}
+                          {transaction.type === 'INCOME' ? '+' : '-'}
+                          {formatCurrency(parseFloat(transaction.amount))}
                         </TableCell>
-                      </TableRow>
+                      </MotionTableRow>
                     ))
                   ) : (
                     <TableRow>
@@ -320,49 +226,50 @@ export function DashboardClient({ userName }: { userName: string }) {
                       </TableCell>
                     </TableRow>
                   )}
-                </TableBody>
+                </MotionTableBody>
               </Table>
             </div>
             <div className="mt-4">
               <Button variant="outline" className="w-full text-muted-foreground hover:text-primary transition-colors" asChild>
-                <Link href="/transactions">
-                  View All Transactions
-                </Link>
+                <Link href="/transactions">View All Transactions</Link>
               </Button>
             </div>
           </CardContent>
         </Card>
-        
+        </MotionDiv>
+
         {/* Chart Area */}
-        <Card className="col-span-1 lg:col-span-4 shadow-sm border-2">
-          <CardHeader>
-            <CardTitle className="flex justify-between items-center">
-              Overview
-              <span className="bg-muted px-2 py-1 rounded font-normal text-muted-foreground text-xs uppercase tracking-widest">
-                {timeRange}
-              </span>
-            </CardTitle>
-            <CardDescription>
-              {timeRange === 'year' ? 'Monthly' : 'Daily'} breakdown of finances.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <div className="h-[300px]">
-              <OverviewChart data={summary?.chartData || []} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <MotionDiv className="col-span-1 lg:col-span-4 h-full" variants={slideUp}>
+          <Card className="shadow-sm border-2 h-full">
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                Overview
+                <span className="bg-muted px-2 py-1 rounded font-normal text-muted-foreground text-xs uppercase tracking-widest">
+                  {preset}
+                </span>
+              </CardTitle>
+              <CardDescription>
+                {preset === 'year' ? 'Monthly' : 'Daily'} breakdown of finances.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+              <div className="h-[300px]">
+                <OverviewChart data={summary?.chartData || []} />
+              </div>
+            </CardContent>
+          </Card>
+        </MotionDiv>
+      </MotionDiv>
 
       <div className="gap-8 grid grid-cols-1 lg:grid-cols-2">
-        <CategoryDistributionChart 
-          title="Income Distribution" 
+        <CategoryDistributionChart
+          title="Income Distribution"
           description="Where your money comes from."
           data={summary?.categoryIncome || []}
           loading={summaryLoading}
         />
-        <CategoryDistributionChart 
-          title="Expense Distribution" 
+        <CategoryDistributionChart
+          title="Expense Distribution"
           description="Where your money goes."
           data={summary?.categoryExpense || []}
           loading={summaryLoading}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getTags,
   getTag,
@@ -45,7 +46,11 @@ export function useCreateTag() {
   return useMutation({
     mutationFn: createTag,
     onSuccess: () => {
+      toast.success('Tag created');
       queryClient.invalidateQueries({ queryKey: tagKeys.lists() });
+    },
+    onError: () => {
+      toast.error('Failed to create tag');
     },
   });
 }
@@ -57,10 +62,13 @@ export function useUpdateTag() {
     mutationFn: ({ id, data }: { id: string; data: UpdateTagInput }) =>
       updateTag(id, data),
     onSuccess: (_data, variables) => {
+      toast.success('Tag updated');
       queryClient.invalidateQueries({ queryKey: tagKeys.lists() });
       queryClient.invalidateQueries({ queryKey: tagKeys.detail(variables.id) });
-      // Invalidate transactions as they reference tags
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+    onError: () => {
+      toast.error('Failed to update tag');
     },
   });
 }
@@ -83,9 +91,13 @@ export function useDeleteTag() {
       return { previousTags };
     },
     onError: (_err, _deletedId, context) => {
+      toast.error('Failed to delete tag');
       if (context?.previousTags) {
         queryClient.setQueryData(tagKeys.lists(), context.previousTags);
       }
+    },
+    onSuccess: () => {
+      toast.success('Tag deleted');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: tagKeys.lists() });

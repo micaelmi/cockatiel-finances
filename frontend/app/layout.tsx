@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
-import { UserIdProvider } from "@/providers/user-id-provider";
+import { AuthProvider } from "@/providers/auth-provider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -52,10 +53,11 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <QueryProvider>
-              <UserIdProvider>
+              <AuthProvider>
                 {children}
-              </UserIdProvider>
+              </AuthProvider>
             </QueryProvider>
+            <Toaster richColors position="bottom-right" />
           </ThemeProvider>
         </body>
       </html>

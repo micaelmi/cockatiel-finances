@@ -17,6 +17,17 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Form,
   FormControl,
   FormDescription,
@@ -124,7 +135,6 @@ export function TransactionForm({ type: propsType, initialData, transactionId, o
     try {
       const newTag = await createTagMutation.mutateAsync({ 
         name,
-        color: '#64748b' // Default slate color
       });
       const currentTags = form.getValues('tagIds') || [];
       form.setValue('tagIds', [...currentTags, newTag.id]);
@@ -273,7 +283,7 @@ export function TransactionForm({ type: propsType, initialData, transactionId, o
                     className="flex justify-center items-center rounded-full w-6 h-6 text-white"
                     style={{ backgroundColor: category.color }}
                   >
-                    <IconRenderer name={category.icon || 'HelpCircle'} className="w-3.5 h-3.5" />
+                    <IconRenderer name={category.icon || 'HelpCircle'} className="w-3.5 h-3.5 text-white" />
                   </div>
                   {category.name}
                 </div>
@@ -360,10 +370,7 @@ export function TransactionForm({ type: propsType, initialData, transactionId, o
                             >
                               <Check className="w-4 h-4" />
                             </div>
-                            <span
-                              className="mr-2 rounded-full w-2 h-2"
-                              style={{ backgroundColor: tag.color }}
-                            />
+
                             {tag.name}
                           </CommandItem>
                         ))}
@@ -376,6 +383,30 @@ export function TransactionForm({ type: propsType, initialData, transactionId, o
             </FormItem>
           )}
         />
+
+        <div className="flex justify-end mt-1">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant="link" size="sm" className="p-0 h-auto text-muted-foreground hover:text-primary text-xs">
+                Manage categories and tags
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Leave this page?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Any unsaved changes in this form will be lost if you navigate to the management page.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => router.push('/manage')}>
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
 
         <CustomFormTextarea
           control={form.control}

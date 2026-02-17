@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
 import {
   getAccounts,
   getAccount,
@@ -14,6 +15,7 @@ import type {
   CreateAccountInput,
   UpdateAccountInput,
 } from '../api/types';
+import { transactionKeys } from './use-transactions';
 
 // Query Keys
 export const accountKeys = {
@@ -55,7 +57,12 @@ export function useCreateAccount() {
   return useMutation({
     mutationFn: createAccount,
     onSuccess: () => {
+      toast.success('Account created');
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
+    },
+    onError: () => {
+      toast.error('Failed to create account');
     },
   });
 }
@@ -67,10 +74,15 @@ export function useUpdateAccount() {
     mutationFn: ({ id, data }: { id: string; data: UpdateAccountInput }) =>
       updateAccount(id, data),
     onSuccess: (_data, variables) => {
+      toast.success('Account updated');
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: accountKeys.detail(variables.id),
       });
+      queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
+    },
+    onError: () => {
+      toast.error('Failed to update account');
     },
   });
 }
@@ -95,6 +107,7 @@ export function useDeleteAccount() {
       return { previousAccounts };
     },
     onError: (_err, _deletedId, context) => {
+      toast.error('Failed to delete account');
       if (context?.previousAccounts) {
         queryClient.setQueryData(
           accountKeys.lists(),
@@ -102,10 +115,14 @@ export function useDeleteAccount() {
         );
       }
     },
+    onSuccess: () => {
+      toast.success('Account deleted');
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
       // Also invalidate transactions as they reference accounts
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
     },
   });
 }

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
 import {
   getTransactions,
   createTransaction,
@@ -59,12 +60,13 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: createTransaction,
     onSuccess: () => {
-      // Invalidate and refetch transactions list
+      toast.success('Transaction created');
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-      // Also invalidate accounts as balance might have changed
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
-      // Invalidate summaries
       queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
+    },
+    onError: (err) => {
+      toast.error('Failed to create transaction');
     },
   });
 }
@@ -76,9 +78,13 @@ export function useUpdateTransaction() {
     mutationFn: ({ id, data }: { id: string; data: UpdateTransactionInput }) =>
       updateTransaction(id, data),
     onSuccess: () => {
+      toast.success('Transaction updated');
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: transactionKeys.summaries() });
+    },
+    onError: (err) => {
+      toast.error('Failed to update transaction');
     },
   });
 }
@@ -89,20 +95,13 @@ export function useDeleteTransaction() {
   return useMutation({
     mutationFn: deleteTransaction,
     onMutate: async (deletedId) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: transactionKeys.lists() });
-
-      // We can't easily snapshot all lists, so we settle for invalidation mostly, 
-      // but if we were to optimistically update, we'd need to find the specific query.
-      // For now, let's just invalidate on success/settled to be safe with pagination.
-      // Optimistic update for paginated lists is complex.
     },
     onSuccess: () => {
-      // toast.success('Transaction deleted');
+      toast.success('Transaction deleted');
     },
     onError: (err) => {
-      // toast.error('Failed to delete transaction');
-      console.error(err);
+      toast.error('Failed to delete transaction');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
