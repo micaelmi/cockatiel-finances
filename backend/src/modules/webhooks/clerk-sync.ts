@@ -1,15 +1,22 @@
 import { FastifyInstance } from 'fastify';
 import { Webhook } from 'svix';
 import { prisma } from '../../lib/prisma';
+import { env } from '../../lib/env';
+
+interface ClerkWebhookEvent {
+  type: string;
+  data: {
+    id: string;
+    email_addresses: { id: string; email_address: string }[];
+    primary_email_address_id: string;
+    first_name: string | null;
+    last_name: string | null;
+    image_url: string | null;
+  };
+}
 
 export async function clerkSync(app: FastifyInstance) {
   app.post('/clerk', async (request, reply) => {
-    const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
-
-    if (!CLERK_WEBHOOK_SECRET) {
-      return reply.status(500).send({ error: 'Webhook secret not configured' });
-    }
-
     const headers = request.headers;
     const svix_id = headers['svix-id'] as string;
     const svix_timestamp = headers['svix-timestamp'] as string;
@@ -22,25 +29,25 @@ export async function clerkSync(app: FastifyInstance) {
     const payload = request.body;
     const body = JSON.stringify(payload);
 
-    const wh = new Webhook(CLERK_WEBHOOK_SECRET);
+    const wh = new Webhook(env.CLERK_WEBHOOK_SECRET);
 
-    let evt: any;
+    let evt: ClerkWebhookEvent;
 
     try {
       evt = wh.verify(body, {
         'svix-id': svix_id,
         'svix-timestamp': svix_timestamp,
         'svix-signature': svix_signature,
-      });
+      }) as ClerkWebhookEvent;
     } catch (err) {
-      console.error('Error verifying webhook:', err);
+      request.log.error(err, 'Error verifying webhook');
       return reply.status(400).send({ error: 'Invalid signature' });
     }
 
     const { id } = evt.data;
     const eventType = evt.type;
 
-    console.log(`Webhook received: ${eventType} for user ${id}`);
+    request.log.info(`Webhook received: ${eventType} for user ${id}`);
 
     if (eventType === 'user.created' || eventType === 'user.updated') {
       const { 
@@ -52,7 +59,7 @@ export async function clerkSync(app: FastifyInstance) {
       } = evt.data;
       
       const primaryEmail = email_addresses.find(
-        (email: any) => email.id === primary_email_address_id
+        (email) => email.id === primary_email_address_id
       )?.email_address;
 
       if (!primaryEmail) {

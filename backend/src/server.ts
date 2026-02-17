@@ -4,14 +4,17 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { appRoutes } from './modules';
+import { env } from './lib/env';
 
-const app = fastify().withTypeProvider();
+const app = fastify({
+  logger: env.NODE_ENV === 'development',
+}).withTypeProvider();
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 app.register(cors, {
-  origin: '*',
+  origin: env.CORS_ORIGINS.split(','),
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 });
 
@@ -30,8 +33,24 @@ app.register(swaggerUi, {
   routePrefix: '/docs',
 });
 
+// Global error handler — prevents raw error leaks to clients
+app.setErrorHandler((error: Error & { validation?: unknown }, request, reply) => {
+  if (error.validation) {
+    return reply.status(400).send({
+      message: 'Validation error',
+      errors: error.validation,
+    });
+  }
+
+  request.log.error(error);
+  reply.status(500).send({ 
+    message: 'Internal server error',
+    details: env.NODE_ENV === 'development' ? error.message : undefined
+  });
+});
+
 app.register(appRoutes);
 
-app.listen({ port: 3333, host: '0.0.0.0' }).then(() => {
-  console.log('HTTP Server Running on http://localhost:3333');
+app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {
+  console.log(`HTTP Server Running on http://localhost:${env.PORT}`);
 });

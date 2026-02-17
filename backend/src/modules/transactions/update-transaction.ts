@@ -8,9 +8,6 @@ export async function updateTransaction(app: FastifyInstance) {
     schema: {
       tags: ['transactions'],
       summary: 'Update a transaction',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       params: z.object({
         id: z.uuid(),
       }),
@@ -24,9 +21,25 @@ export async function updateTransaction(app: FastifyInstance) {
         categoryId: z.uuid().nullable().optional(),
         tagIds: z.array(z.uuid()).optional(),
       }),
+      response: {
+        200: z.object({
+          id: z.uuid(),
+          amount: z.string(),
+          type: z.enum(['INCOME', 'EXPENSE']),
+          date: z.coerce.date(),
+          description: z.string(),
+          comments: z.string().nullable(),
+          categoryId: z.string().nullable(),
+          accountId: z.string(),
+          userId: z.string(),
+          createdAt: z.coerce.date(),
+          updatedAt: z.coerce.date(),
+        }),
+        404: z.object({ message: z.string() }),
+      },
     },
-  }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+  }, async (request, reply) => {
+    const userId = request.userId;
     const { id } = request.params;
     const { amount, type, date, description, comments, categoryId, tagIds, accountId } = request.body;
 
@@ -36,7 +49,7 @@ export async function updateTransaction(app: FastifyInstance) {
       });
 
       if (!oldTransaction) {
-        throw new Error('Transaction not found');
+        throw reply.status(404).send({ message: 'Transaction not found' });
       }
 
       // 1. Revert old balance impact

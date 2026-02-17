@@ -8,9 +8,6 @@ export async function updateCategory(app: FastifyInstance) {
     schema: {
       tags: ['categories'],
       summary: 'Update a category',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       params: z.object({
         id: z.uuid(),
       }),
@@ -30,21 +27,22 @@ export async function updateCategory(app: FastifyInstance) {
           userId: z.string().nullable(),
           createdAt: z.date(),
         }),
+        404: z.object({ message: z.string() }),
       },
     },
-  }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+  }, async (request, reply) => {
+    const userId = request.userId;
     const { id } = request.params;
     const { name, color, icon, type } = request.body;
 
+    const existing = await prisma.category.findUnique({ where: { id, userId } });
+    if (!existing) {
+      return reply.status(404).send({ message: 'Category not found' });
+    }
+
     const category = await prisma.category.update({
       where: { id, userId },
-      data: {
-        name,
-        color,
-        icon,
-        type,
-      },
+      data: { name, color, icon, type },
     });
 
     return category;

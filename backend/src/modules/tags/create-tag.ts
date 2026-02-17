@@ -8,9 +8,6 @@ export async function createTag(app: FastifyInstance) {
     schema: {
       tags: ['tags'],
       summary: 'Create a new tag',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       body: z.object({
         name: z.string(),
       }),
@@ -24,7 +21,7 @@ export async function createTag(app: FastifyInstance) {
       },
     },
   }, async (request, reply) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { name } = request.body;
 
     const tag = await prisma.tag.create({

@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { authPlugin } from '../lib/auth';
 import { categoryRoutes } from './categories';
 import { tagRoutes } from './tags';
 import { transactionRoutes } from './transactions';
@@ -6,14 +7,19 @@ import { webhookRoutes } from './webhooks';
 import { accountRoutes } from './accounts';
 
 export async function appRoutes(app: FastifyInstance) {
+  // Webhooks and health check are public — registered before auth
   app.register(webhookRoutes, { prefix: '/webhooks' });
-  app.register(accountRoutes);
-  app.register(categoryRoutes);
-  app.register(tagRoutes);
-  app.register(transactionRoutes);
 
-  // Health check
   app.get('/health', async () => {
     return { status: 'ok' };
+  });
+
+  // All remaining routes are protected by Clerk JWT auth
+  app.register(async (protectedApp) => {
+    protectedApp.register(authPlugin);
+    protectedApp.register(accountRoutes);
+    protectedApp.register(categoryRoutes);
+    protectedApp.register(tagRoutes);
+    protectedApp.register(transactionRoutes);
   });
 }

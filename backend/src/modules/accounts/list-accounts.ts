@@ -8,9 +8,6 @@ export async function listAccounts(app: FastifyInstance) {
     schema: {
       tags: ['accounts'],
       summary: 'List all accounts for a user',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       response: {
         200: z.array(z.object({
           id: z.uuid(),
@@ -25,7 +22,7 @@ export async function listAccounts(app: FastifyInstance) {
       },
     },
   }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
 
     const accounts = await prisma.account.findMany({
       where: { userId },

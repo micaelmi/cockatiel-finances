@@ -8,9 +8,6 @@ export async function updateTag(app: FastifyInstance) {
     schema: {
       tags: ['tags'],
       summary: 'Update a tag',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       params: z.object({
         id: z.uuid(),
       }),
@@ -24,12 +21,18 @@ export async function updateTag(app: FastifyInstance) {
           userId: z.string(),
           createdAt: z.date(),
         }),
+        404: z.object({ message: z.string() }),
       },
     },
-  }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+  }, async (request, reply) => {
+    const userId = request.userId;
     const { id } = request.params;
     const { name } = request.body;
+
+    const existing = await prisma.tag.findUnique({ where: { id, userId } });
+    if (!existing) {
+      return reply.status(404).send({ message: 'Tag not found' });
+    }
 
     const tag = await prisma.tag.update({
       where: { id, userId },

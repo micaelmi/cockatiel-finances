@@ -8,9 +8,6 @@ export async function createTransaction(app: FastifyInstance) {
     schema: {
       tags: ['transactions'],
       summary: 'Create a new transaction',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       body: z.object({
         amount: z.number(),
         type: z.enum(['INCOME', 'EXPENSE']),
@@ -30,7 +27,7 @@ export async function createTransaction(app: FastifyInstance) {
       },
     },
   }, async (request, reply) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { amount, type, date, description, comments, categoryId, tagIds, accountId } = request.body;
 
     const transaction = await prisma.$transaction(async (tx) => {

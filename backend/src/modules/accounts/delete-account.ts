@@ -8,22 +8,23 @@ export async function deleteAccount(app: FastifyInstance) {
     schema: {
       tags: ['accounts'],
       summary: 'Delete an account',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       params: z.object({
         id: z.uuid(),
       }),
       response: {
         204: z.null(),
+        404: z.object({ message: z.string() }),
       },
     },
   }, async (request, reply) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { id } = request.params;
 
-    // Check if it's not the last account (optional but good practice)
-    // For now, just delete. Prisma handles transaction cleanup via Cascade if configured.
+    const existing = await prisma.account.findUnique({ where: { id, userId } });
+    if (!existing) {
+      return reply.status(404).send({ message: 'Account not found' });
+    }
+
     await prisma.account.delete({
       where: { id, userId },
     });

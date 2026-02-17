@@ -8,9 +8,6 @@ export async function createAccount(app: FastifyInstance) {
     schema: {
       tags: ['accounts'],
       summary: 'Create a new account',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       body: z.object({
         name: z.string(),
         balance: z.number().default(0),
@@ -23,26 +20,45 @@ export async function createAccount(app: FastifyInstance) {
           name: z.string(),
           balance: z.string(),
         }),
+        400: z.object({ message: z.string() }),
       },
     },
   }, async (request, reply) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { name, balance, color, icon } = request.body;
-
-    const account = await prisma.account.create({
-      data: {
-        userId,
-        name,
-        balance,
-        color,
-        icon,
-      },
+    
+    // Ensure user exists locally
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId },
     });
+    
+    if (!userExists) {
+      return reply.status(400).send({ 
+        message: 'User record not found. Please ensure your account is synced via webhook.' 
+      });
+    }
 
-    return reply.status(201).send({
-      id: account.id,
-      name: account.name,
-      balance: account.balance.toString(),
-    });
+    try {
+      const account = await prisma.account.create({
+        data: {
+          userId,
+          name,
+          balance,
+          color,
+          icon,
+        },
+      });
+
+      return reply.status(201).send({
+        id: account.id,
+        name: account.name,
+        balance: account.balance.toString(),
+      });
+    } catch (error: any) {
+      if (error.code === 'P2003') {
+        return reply.status(400).send({ message: 'User not found or invalid reference.' });
+      }
+      throw error; // Let global handler deal with others
+    }
   });
 }

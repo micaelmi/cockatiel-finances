@@ -8,9 +8,6 @@ export async function updateAccount(app: FastifyInstance) {
     schema: {
       tags: ['accounts'],
       summary: 'Update an account',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       params: z.object({
         id: z.uuid(),
       }),
@@ -26,21 +23,22 @@ export async function updateAccount(app: FastifyInstance) {
           name: z.string(),
           balance: z.string(),
         }),
+        404: z.object({ message: z.string() }),
       },
     },
-  }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+  }, async (request, reply) => {
+    const userId = request.userId;
     const { id } = request.params;
     const { name, balance, color, icon } = request.body;
 
+    const existing = await prisma.account.findUnique({ where: { id, userId } });
+    if (!existing) {
+      return reply.status(404).send({ message: 'Account not found' });
+    }
+
     const account = await prisma.account.update({
       where: { id, userId },
-      data: {
-        name,
-        balance,
-        color,
-        icon,
-      },
+      data: { name, balance, color, icon },
     });
 
     return {

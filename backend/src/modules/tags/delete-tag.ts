@@ -8,19 +8,22 @@ export async function deleteTag(app: FastifyInstance) {
     schema: {
       tags: ['tags'],
       summary: 'Delete a tag',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       params: z.object({
         id: z.uuid(),
       }),
       response: {
         204: z.null(),
+        404: z.object({ message: z.string() }),
       },
     },
   }, async (request, reply) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { id } = request.params;
+
+    const existing = await prisma.tag.findUnique({ where: { id, userId } });
+    if (!existing) {
+      return reply.status(404).send({ message: 'Tag not found' });
+    }
 
     await prisma.tag.delete({
       where: { id, userId },

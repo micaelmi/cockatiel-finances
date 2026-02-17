@@ -8,9 +8,6 @@ export async function listTransactions(app: FastifyInstance) {
     schema: {
       tags: ['transactions'],
       summary: 'List all transactions for a user',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       querystring: z.object({
         from: z.coerce.date().optional(),
         to: z.coerce.date().optional(),
@@ -56,7 +53,7 @@ export async function listTransactions(app: FastifyInstance) {
       },
     },
   }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { from, to, page, limit, type } = request.query;
 
     const skip = (page - 1) * limit;

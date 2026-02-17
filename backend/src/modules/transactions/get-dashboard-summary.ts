@@ -9,9 +9,6 @@ export async function getDashboardSummary(app: FastifyInstance) {
     schema: {
       tags: ['transactions'],
       summary: 'Get dashboard summary data',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       querystring: z.object({
         from: z.coerce.date(),
         to: z.coerce.date(),
@@ -31,6 +28,7 @@ export async function getDashboardSummary(app: FastifyInstance) {
             name: z.string(),
             balance: z.number(),
             color: z.string(),
+            icon: z.string(),
           })),
           categoryIncome: z.array(z.object({
             id: z.string(),
@@ -48,7 +46,7 @@ export async function getDashboardSummary(app: FastifyInstance) {
       },
     },
   }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { from: startDate, to: endDate } = request.query;
 
     // 1. Total Balance & individual account balances
@@ -59,6 +57,7 @@ export async function getDashboardSummary(app: FastifyInstance) {
         name: true,
         balance: true,
         color: true,
+        icon: true,
       },
     });
 

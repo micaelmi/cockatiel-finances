@@ -8,9 +8,6 @@ export async function listCategories(app: FastifyInstance) {
     schema: {
       tags: ['categories'],
       summary: 'List all categories for a user',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       response: {
         200: z.array(z.object({
           id: z.uuid(),
@@ -24,7 +21,7 @@ export async function listCategories(app: FastifyInstance) {
       },
     },
   }, async (request) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
 
     const categories = await prisma.category.findMany({
       where: {

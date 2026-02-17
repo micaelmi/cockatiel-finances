@@ -8,18 +8,16 @@ export async function deleteTransaction(app: FastifyInstance) {
     schema: {
       tags: ['transactions'],
       summary: 'Delete a transaction',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       params: z.object({
         id: z.uuid(),
       }),
       response: {
         204: z.null(),
+        404: z.object({ message: z.string() }),
       },
     },
   }, async (request, reply) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { id } = request.params;
 
     await prisma.$transaction(async (tx) => {
@@ -28,7 +26,7 @@ export async function deleteTransaction(app: FastifyInstance) {
       });
 
       if (!transaction) {
-        throw new Error('Transaction not found');
+        throw reply.status(404).send({ message: 'Transaction not found' });
       }
 
       // Revert account balance

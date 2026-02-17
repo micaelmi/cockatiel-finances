@@ -8,9 +8,6 @@ export async function createCategory(app: FastifyInstance) {
     schema: {
       tags: ['categories'],
       summary: 'Create a new category',
-      headers: z.object({
-        'x-user-id': z.string().describe('Clerk User ID'),
-      }),
       body: z.object({
         name: z.string(),
         color: z.string().optional(),
@@ -30,7 +27,7 @@ export async function createCategory(app: FastifyInstance) {
       },
     },
   }, async (request, reply) => {
-    const userId = request.headers['x-user-id'] as string;
+    const userId = request.userId;
     const { name, color, icon, type } = request.body;
 
     const category = await prisma.category.create({
