@@ -1,7 +1,8 @@
 import 'dotenv/config';
-import { TransactionType } from '@prisma/client';
-import { prisma } from "../src/lib/prisma";
+import { PrismaClient, TransactionType } from '@prisma/client';
 import { subDays, startOfMonth, endOfMonth, eachDayOfInterval, format } from 'date-fns';
+
+const prisma = new PrismaClient();
 
 async function main() {
   const userId = 'user_39IJ3qN94JhzWo7nZXciPbwOTWf';
